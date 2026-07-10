@@ -423,6 +423,17 @@ document.addEventListener('DOMContentLoaded',function(){
     });
 });
 
+function describeSyncError(e){
+    const msg=(e&&e.message)||'';
+    if(msg.includes('403')||msg.includes('401')){
+        return 'the shared database rejected the write (permission denied — check the Firebase Rules include this path)';
+    }
+    if(msg.includes('Firebase')){
+        return `the shared database returned an error (${msg})`;
+    }
+    return "couldn't reach the shared database (offline?)";
+}
+
 async function confirmAddProject(){
     const inp=document.getElementById('newProjectInput');const name=inp.value.trim();
     if(!name){inp.style.borderColor='#e74c3c';return;}
@@ -444,7 +455,7 @@ async function confirmAddProject(){
             await pushProjectToCloud(name);
         }catch(e){
             console.warn('Could not sync new project to the shared database.',e);
-            showMessage(`⚠️ "${name}" was added on this device but couldn't be synced to the shared list (offline?). It will sync automatically next time you're online and add another project, or ask to have it synced manually.`);
+            showMessage(`⚠️ "${name}" was added on this device, but ${describeSyncError(e)}. It will sync automatically next time you save/add something while online, or you can fix the rules and reload.`);
         }finally{
             addBtn.textContent=originalLabel;addBtn.disabled=false;
         }
@@ -491,7 +502,7 @@ async function saveProjectEdit(){
         showMessage(`✅ Project name updated to "${newName}".`,true);
     }catch(e){
         console.warn('Could not sync the renamed project to the shared database.',e);
-        showMessage(`⚠️ Renamed on this device, but couldn't sync to the shared list (offline?). It will sync next time you're online.`);
+        showMessage(`⚠️ Renamed on this device, but ${describeSyncError(e)}. It will sync next time it works.`);
     }finally{
         btn.textContent=orig;btn.disabled=false;
     }
@@ -701,7 +712,7 @@ async function saveVisitorRecord(id){
         showMessage(`✅ Contact "${name}" saved.`,true);
     }catch(e){
         console.warn('Could not sync visitor contact to the shared directory.',e);
-        showMessage(`⚠️ "${name}" saved on this device but couldn't sync to the shared directory (offline?). It will sync next time you're online.`);
+        showMessage(`⚠️ "${name}" saved on this device, but ${describeSyncError(e)}. It will sync next time it works.`);
     }finally{
         btn.textContent=orig;btn.disabled=false;
     }
@@ -732,7 +743,7 @@ async function saveAttendeeRecord(id){
         showMessage(`✅ Contact "${name}" saved.`,true);
     }catch(e){
         console.warn('Could not sync attendee contact to the shared directory.',e);
-        showMessage(`⚠️ "${name}" saved on this device but couldn't sync to the shared directory (offline?). It will sync next time you're online.`);
+        showMessage(`⚠️ "${name}" saved on this device, but ${describeSyncError(e)}. It will sync next time it works.`);
     }finally{
         btn.textContent=orig;btn.disabled=false;
     }
